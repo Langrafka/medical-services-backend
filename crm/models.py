@@ -32,7 +32,7 @@ class Address(models.Model):
     region = models.ForeignKey(
         Region,
         on_delete=models.SET_NULL,
-        related_name="addressees",
+        related_name="addresses",
         blank=True,
         null=True,
     )
