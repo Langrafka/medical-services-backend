@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "core",
     "web_content",
     "operations",
+    "crm",
 ]
 
 MIDDLEWARE = [
