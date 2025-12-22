@@ -42,21 +42,25 @@ class Address(models.Model):
     building = models.CharField(max_length=30)
     local = models.CharField(max_length=30, blank=True, null=True)
     customer = models.ForeignKey(
-        Customer, on_delete=models.CASCADE, related_name="addressees"
+        Customer, on_delete=models.CASCADE, related_name="addresses"
     )
 
     def __str__(self):
-        return f"{self.street} {self.building} {self.local} {self.city}"
+        return f"{self.city}, {self.street} {self.building}"
 
 
 class ContactForm(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=20, unique=True)
+    phone = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     customer = models.ForeignKey(
-        Customer, on_delete=models.CASCADE, related_name="contact_forms"
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="contact_forms",
+        null=True,
+        blank=True,
     )
     status = models.CharField(
         max_length=10, choices=FormStatus.choices, default=FormStatus.NEW
@@ -65,17 +69,11 @@ class ContactForm(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} {self.phone}"
 
-    def get_or_create(self):
-        customer = Customer.objects.get(self.phone)
-        if customer:
-            return customer
-        return Customer(self)
-
 
 class CareerForm(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=20, unique=True)
+    phone = models.CharField(max_length=20)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -97,16 +95,12 @@ class Order(models.Model):
     )
     region = models.ForeignKey(Region, on_delete=models.PROTECT, related_name="orders")
     nurse = models.ManyToManyField(Nurse, blank=True, related_name="orders")
-    quantity = models.PositiveIntegerField(blank=True, null=True)
     status = models.CharField(
         max_length=10, choices=OrderStatus.choices, default=OrderStatus.NEW
     )
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    total_price = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True
-    )
 
     @property
     def calculated_total(self):
@@ -117,7 +111,8 @@ class Order(models.Model):
         return 0
 
     def __str__(self):
-        return f"Phone: {self.customer.phone} Status: {self.status}"
+        customer_info = self.customer.phone if self.customer else "No customer"
+        return f"Order #{self.id} | {customer_info} | {self.status}"
 
 
 class OrderItem(models.Model):
@@ -134,3 +129,6 @@ class OrderItem(models.Model):
         if not self.price_at_buy:
             self.price_at_buy = self.service.price
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.service.name} (x{self.quantity})"
