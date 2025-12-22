@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import ServiceType, Service
+
+from web_content.models import Service, ServiceType
 
 
 @admin.register(ServiceType)
