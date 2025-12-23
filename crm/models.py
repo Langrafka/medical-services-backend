@@ -98,6 +98,10 @@ class Order(models.Model):
     status = models.CharField(
         max_length=10, choices=OrderStatus.choices, default=OrderStatus.NEW
     )
+    address = models.ForeignKey(
+        Address, on_delete=models.PROTECT, related_name="orders", null=True, blank=True
+    )
+    scheduled = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
