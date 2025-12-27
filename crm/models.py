@@ -56,6 +56,7 @@ class ContactForm(models.Model):
     phone = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    description = models.TextField(blank=True, null=True)
     customer = models.ForeignKey(
         Customer,
         on_delete=models.CASCADE,

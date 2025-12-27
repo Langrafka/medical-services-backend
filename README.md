@@ -31,3 +31,6 @@ Bash
 
 docker compose exec api python manage.py createsuperuser
 Verify: Go to: http://localhost/admin (or https:// if SSL is configured) Log in with the credentials created in step 4.
+
+Contact form endpoint: http://localhost:8000/api/contact_form
+Career form endpoint: http://localhost:8000/api/career_form
