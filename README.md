@@ -34,3 +34,4 @@ Verify: Go to: http://localhost/admin (or https:// if SSL is configured) Log in 
 
 Contact form endpoint: http://localhost:8000/api/contact_form
 Career form endpoint: http://localhost:8000/api/career_form
+Services endpoint: http://localhost:8000/api/services

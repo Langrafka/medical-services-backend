@@ -6,7 +6,7 @@ from crm.models import Customer
 from crm.serializers import CareerFormSerializer, ContactFormSerializer
 
 
-class ContactFormCreate(CreateAPIView):
+class ContactFormView(CreateAPIView):
     serializer_class = ContactFormSerializer
 
     def perform_create(self, serializer):
@@ -25,5 +25,5 @@ class ContactFormCreate(CreateAPIView):
         serializer.save(customer=customer)
 
 
-class CareerFormCreate(CreateAPIView):
+class CareerFormView(CreateAPIView):
     serializer_class = CareerFormSerializer
