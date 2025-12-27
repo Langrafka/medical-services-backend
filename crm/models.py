@@ -47,7 +47,7 @@ class Address(models.Model):
     )
 
     def __str__(self):
-        return f"{self.city}, {self.street} {self.building}"
+        return f"{self.customer.last_name} {self.city}, {self.street} {self.building}"
 
 
 class ContactForm(models.Model):
