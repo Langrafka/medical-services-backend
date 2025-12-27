@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import DecimalField, F, Sum
 
 from operations.models import Nurse, Region
 from web_content.models import Service
@@ -107,16 +108,20 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     @property
-    def calculated_total(self):
+    def total_cost(self):
         if hasattr(self, "order_items"):
-            return sum(
-                item.price_at_buy * item.quantity for item in self.order_items.all()
-            )
+            result = self.order_items.aggregate(
+                total=Sum(
+                    F("price_at_buy") * F("quantity"),
+                    output_field=DecimalField(),
+                )
+            )["total"]
+            return result or 0
         return 0
 
     def __str__(self):
         customer_info = self.customer.phone if self.customer else "No customer"
-        return f"Order #{self.id} | {customer_info} | {self.status}"
+        return f"Order #{self.pk} | {customer_info} | {self.status}"
 
 
 class OrderItem(models.Model):
