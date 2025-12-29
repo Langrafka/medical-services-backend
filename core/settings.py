@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     # Third-party apps
     "rest_framework",
     "debug_toolbar",
+    "drf_spectacular_sidecar",
+    "drf_spectacular",
     # Local apps
     "core",
     "web_content",
@@ -161,4 +163,18 @@ CELERY_TASK_SERIALIZER = "json"
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": "debug_toolbar.middleware.show_toolbar_with_docker",
     "RENDER_PANELS": True,
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "TITLE": "Medical Solution API",
+    "DESCRIPTION": "Backend API for Medical Solution",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
