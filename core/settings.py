@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "drf_spectacular_sidecar",
     "drf_spectacular",
+    "corsheaders",
     # Local apps
     "core",
     "web_content",
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -96,6 +98,17 @@ if DEBUG:
         "10.0.2.2",
     ]
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in CORS_ALLOWED_ORIGINS if origin.strip()
+]
+
+if DEBUG:
+    CORS_ALLOWED_ORIGINS += [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
