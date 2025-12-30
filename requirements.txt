@@ -11,9 +11,11 @@ click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
 Django==6.0
+django-axes==8.1.0
 django-cors-headers==4.9.0
 django-debug-toolbar==6.1.0
 django-filter==25.2
+django-ipware==7.0.1
 django-stubs==5.2.8
 django-stubs-ext==5.2.8
 djangorestframework==3.16.1
@@ -47,6 +49,7 @@ pytest==9.0.2
 pytest-django==4.11.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
+python-ipware==3.0.0
 pytokens==0.3.0
 PyYAML==6.0.3
 redis==6.4.0
