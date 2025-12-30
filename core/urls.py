@@ -27,7 +27,7 @@ from drf_spectacular.views import (
 from core import settings
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("med-sol-adm/", admin.site.urls),
     path("api/", include("crm.urls")),
     path("api/", include("web_content.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
