@@ -1,3 +1,4 @@
+from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.db.models import DecimalField, F, Sum
 
@@ -56,7 +57,13 @@ class ContactForm(models.Model):
     phone = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(
+        blank=True,
+        null=True,
+        validators=[
+            MaxLengthValidator(limit_value=500, message="Description too long")
+        ],
+    )
     customer = models.ForeignKey(
         Customer,
         on_delete=models.CASCADE,
@@ -76,7 +83,13 @@ class CareerForm(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(
+        blank=True,
+        null=True,
+        validators=[
+            MaxLengthValidator(limit_value=500, message="Description too long")
+        ],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(
