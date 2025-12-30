@@ -14,7 +14,10 @@ Django==6.0
 django-cors-headers==4.9.0
 django-debug-toolbar==6.1.0
 django-filter==25.2
+django-stubs==5.2.8
+django-stubs-ext==5.2.8
 djangorestframework==3.16.1
+djangorestframework-stubs==3.16.6
 docker==7.1.0
 drf-spectacular==0.29.0
 drf-spectacular-sidecar==2025.12.1
@@ -53,6 +56,8 @@ rpds-py==0.30.0
 ruff==0.14.10
 six==1.17.0
 sqlparse==0.5.5
+types-PyYAML==6.0.12.20250915
+types-requests==2.32.4.20250913
 typing_extensions==4.15.0
 tzdata==2025.3
 tzlocal==5.3.1

@@ -1,12 +1,15 @@
 # crm/views.py
 
 from rest_framework.generics import CreateAPIView
+from rest_framework.throttling import ScopedRateThrottle
 
 from crm.models import Customer
 from crm.serializers import CareerFormSerializer, ContactFormSerializer
 
 
 class ContactFormView(CreateAPIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "forms_throttle"
     serializer_class = ContactFormSerializer
 
     def perform_create(self, serializer):
@@ -26,4 +29,6 @@ class ContactFormView(CreateAPIView):
 
 
 class CareerFormView(CreateAPIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "forms_throttle"
     serializer_class = CareerFormSerializer

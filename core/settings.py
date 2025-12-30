@@ -167,6 +167,14 @@ DEBUG_TOOLBAR_CONFIG = {
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "forms_throttle": "50/day",
+        "services_throttle": "1000/day",
+        "burst_throttle": "1/second",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
