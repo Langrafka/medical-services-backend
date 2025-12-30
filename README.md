@@ -30,7 +30,7 @@ Create Admin User:
 Bash
 
 docker compose exec api python manage.py createsuperuser
-Verify: Go to: http://localhost/admin (or https:// if SSL is configured) Log in with the credentials created in step 4.
+Verify: Go to: http://localhost/****** (or https:// if SSL is configured) Log in with the credentials created in step 4.
 
 Endpoints:
 
