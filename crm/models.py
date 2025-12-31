@@ -1,4 +1,6 @@
+from django.core.validators import MaxLengthValidator
 from django.db import models
+from django.db.models import DecimalField, F, Sum
 
 from operations.models import Nurse, Region
 from web_content.models import Service
@@ -46,7 +48,7 @@ class Address(models.Model):
     )
 
     def __str__(self):
-        return f"{self.city}, {self.street} {self.building}"
+        return f"{self.customer.last_name} {self.city}, {self.street} {self.building}"
 
 
 class ContactForm(models.Model):
@@ -55,6 +57,13 @@ class ContactForm(models.Model):
     phone = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    description = models.TextField(
+        blank=True,
+        null=True,
+        validators=[
+            MaxLengthValidator(limit_value=500, message="Description too long")
+        ],
+    )
     customer = models.ForeignKey(
         Customer,
         on_delete=models.CASCADE,
@@ -74,7 +83,13 @@ class CareerForm(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(
+        blank=True,
+        null=True,
+        validators=[
+            MaxLengthValidator(limit_value=500, message="Description too long")
+        ],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(
@@ -98,21 +113,29 @@ class Order(models.Model):
     status = models.CharField(
         max_length=10, choices=OrderStatus.choices, default=OrderStatus.NEW
     )
+    address = models.ForeignKey(
+        Address, on_delete=models.PROTECT, related_name="orders", null=True, blank=True
+    )
+    scheduled = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     @property
-    def calculated_total(self):
+    def total_cost(self):
         if hasattr(self, "order_items"):
-            return sum(
-                item.price_at_buy * item.quantity for item in self.order_items.all()
-            )
+            result = self.order_items.aggregate(
+                total=Sum(
+                    F("price_at_buy") * F("quantity"),
+                    output_field=DecimalField(),
+                )
+            )["total"]
+            return result or 0
         return 0
 
     def __str__(self):
         customer_info = self.customer.phone if self.customer else "No customer"
-        return f"Order #{self.id} | {customer_info} | {self.status}"
+        return f"Order #{self.pk} | {customer_info} | {self.status}"
 
 
 class OrderItem(models.Model):

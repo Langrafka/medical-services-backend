@@ -17,3 +17,10 @@ class NurseAdmin(admin.ModelAdmin):
         "telegram_id",
         "email",
     )
+    search_fields = (
+        "first_name",
+        "last_name",
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("region")

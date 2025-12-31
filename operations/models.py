@@ -20,4 +20,5 @@ class Nurse(models.Model):
     region = models.ManyToManyField(Region, blank=True, related_name="nurses")
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        regions = ", ".join([r.name for r in self.region.all()])
+        return f"{self.first_name} {self.last_name} ({regions})"

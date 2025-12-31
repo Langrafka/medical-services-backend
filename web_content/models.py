@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -13,7 +14,15 @@ class Service(models.Model):
     service_type = models.ForeignKey(
         ServiceType, on_delete=models.CASCADE, related_name="services"
     )
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[
+            MinValueValidator(
+                limit_value=0, message="Price must be greater or equal to 0"
+            )
+        ],
+    )
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
