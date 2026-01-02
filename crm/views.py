@@ -8,6 +8,7 @@ from crm.serializers import CareerFormSerializer, ContactFormSerializer
 
 
 class ContactFormView(CreateAPIView):
+    authentication_classes = []
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "forms_throttle"
     serializer_class = ContactFormSerializer
@@ -29,6 +30,7 @@ class ContactFormView(CreateAPIView):
 
 
 class CareerFormView(CreateAPIView):
+    authentication_classes = []
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "forms_throttle"
     serializer_class = CareerFormSerializer
