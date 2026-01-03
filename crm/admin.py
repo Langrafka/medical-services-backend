@@ -27,6 +27,8 @@ class CareerFormAdmin(admin.ModelAdmin):
         "phone",
         "status",
     )
+    search_fields = ("first_name", "last_name")
+    list_filter = ("status",)
 
 
 @admin.register(ContactForm)
