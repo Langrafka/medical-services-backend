@@ -23,3 +23,5 @@ class ServiceAdmin(admin.ModelAdmin):
         "price",
     )
     autocomplete_fields = ("service_type",)
+
+    list_filter = ("service_type__name",)
