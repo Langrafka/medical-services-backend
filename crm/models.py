@@ -1,6 +1,5 @@
 from django.core.validators import MaxLengthValidator
 from django.db import models
-from django.db.models import DecimalField, F, Sum
 
 from operations.models import Nurse, Region
 from web_content.models import Service
@@ -123,13 +122,10 @@ class Order(models.Model):
 
     @property
     def total_cost(self):
-        if hasattr(self, "order_items"):
-            result = self.order_items.aggregate(
-                total=Sum(
-                    F("price_at_buy") * F("quantity"),
-                    output_field=DecimalField(),
-                )
-            )["total"]
+        if self.pk:
+            result = sum(
+                item.price_at_buy * item.quantity for item in self.order_items.all()
+            )
             return result or 0
         return 0
 

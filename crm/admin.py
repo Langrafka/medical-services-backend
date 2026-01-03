@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.db.models import DecimalField, F, Sum
+from django.db.models import DecimalField, F, Sum, Value
+from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -68,22 +69,43 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "customer",
         "region",
-        "address",
+        "address__city",
+        "address__street",
         "status",
-        "description",
-        "created_at",
-        "updated_at",
         "get_total_cost",
     )
     inlines = [OrderItemInline]
     autocomplete_fields = ["customer", "address", "nurse"]
     show_full_result_count = False
+    list_filter = (
+        "status",
+        "created_at",
+        "updated_at",
+        "region",
+    )
+    date_hierarchy = "created_at"
+    search_fields = (
+        "customer__first_name",
+        "customer__last_name",
+        "nurse__first_name",
+        "nurse__last_name",
+        "region__name",
+        "address__city",
+        "address__building",
+        "address__street",
+    )
 
     def get_queryset(self, request):
-        queryset = super().get_queryset(request)
+        queryset = (
+            super()
+            .get_queryset(request)
+            .select_related("region", "customer", "address")
+        ).prefetch_related("nurse", "order_items")
+
         queryset = queryset.annotate(
-            _annotated_total=Sum(
-                F("order_items__price_at_buy") * F("order_items__quantity"),
+            _annotated_total=Coalesce(
+                Sum(F("order_items__price_at_buy") * F("order_items__quantity")),
+                Value(0),
                 output_field=DecimalField(),
             )
         )
@@ -94,7 +116,9 @@ class OrderAdmin(admin.ModelAdmin):
         Check for result in annotate (for list),
         if not get it from model's property.
         """
-        total = getattr(obj, "_annotated_total", obj.total_cost)
+        total = getattr(obj, "_annotated_total", None)
+        if total is None:
+            total = obj.total_cost
         return f"{total:.2f}"
 
     get_total_cost.short_description = "Total cost"
@@ -169,7 +193,3 @@ class CustomerAdmin(admin.ModelAdmin):
     )
     list_filter = ("created_at",)
     show_full_result_count = False
-
-
-# TODO: dodać filtrowanie do modeli.
-# TODO: filtr po statusie
