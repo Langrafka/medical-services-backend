@@ -30,6 +30,7 @@ class CareerFormAdmin(admin.ModelAdmin):
     )
     search_fields = ("first_name", "last_name", "phone")
     list_filter = ("status",)
+    list_editable = ("status",)
 
 
 @admin.register(ContactForm)
@@ -43,6 +44,7 @@ class ContactFormAdmin(admin.ModelAdmin):
     search_fields = ("first_name", "last_name", "phone")
     list_filter = ("status",)
     readonly_fields = ("create_order_link",)
+    list_editable = ("status",)
 
     def create_order_link(self, obj):
         if obj.customer:
@@ -94,6 +96,7 @@ class OrderAdmin(admin.ModelAdmin):
         "address__building",
         "address__street",
     )
+    list_editable = ("status",)
 
     def get_queryset(self, request):
         queryset = (
@@ -193,3 +196,6 @@ class CustomerAdmin(admin.ModelAdmin):
     )
     list_filter = ("created_at",)
     show_full_result_count = False
+
+
+# TODO: Utworzenie Order, powinno zmienić status dla contact form na Done.
