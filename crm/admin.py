@@ -27,7 +27,7 @@ class CareerFormAdmin(admin.ModelAdmin):
         "phone",
         "status",
     )
-    search_fields = ("first_name", "last_name")
+    search_fields = ("first_name", "last_name", "phone")
     list_filter = ("status",)
 
 
@@ -39,7 +39,8 @@ class ContactFormAdmin(admin.ModelAdmin):
         "phone",
         "status",
     )
-
+    search_fields = ("first_name", "last_name", "phone")
+    list_filter = ("status",)
     readonly_fields = ("create_order_link",)
 
     def create_order_link(self, obj):
