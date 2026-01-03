@@ -167,6 +167,7 @@ class CustomerAdmin(admin.ModelAdmin):
         "last_name",
         "phone",
     )
+    list_filter = ("created_at",)
     show_full_result_count = False
 
 
