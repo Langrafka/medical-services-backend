@@ -74,6 +74,7 @@ class OrderAdmin(admin.ModelAdmin):
     )
     inlines = [OrderItemInline]
     autocomplete_fields = ["customer", "address", "nurse"]
+    show_full_result_count = False
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -127,7 +128,6 @@ class AddressAdmin(admin.ModelAdmin):
     list_display = (
         "region",
         "city",
-        "postal_code",
         "street",
         "building",
         "local",
@@ -137,6 +137,10 @@ class AddressAdmin(admin.ModelAdmin):
         "city",
         "street",
         "customer__last_name",
+    )
+    list_filter = (
+        "region",
+        "city",
     )
 
     def get_queryset(self, request):
@@ -160,3 +164,8 @@ class CustomerAdmin(admin.ModelAdmin):
         "last_name",
         "phone",
     )
+    show_full_result_count = False
+
+
+# TODO: dodać filtrowanie do modeli.
+# TODO: filtr po statusie
