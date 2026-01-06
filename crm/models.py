@@ -115,7 +115,7 @@ class Order(models.Model):
     address = models.ForeignKey(
         Address, on_delete=models.PROTECT, related_name="orders", null=True, blank=True
     )
-    scheduled = models.DateTimeField(blank=True, null=True)
+    scheduled_at = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

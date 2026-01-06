@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "corsheaders",
     "axes",
+    "rangefilter",
     # Local apps
     "core",
     "web_content",

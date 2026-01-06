@@ -5,6 +5,7 @@ from django.db.models import DecimalField, F, Sum, Value
 from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.html import format_html
+from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
 from operations.models import Nurse
 
@@ -103,6 +104,7 @@ class OrderAdmin(admin.ModelAdmin):
         "address__city",
         "address__street",
         "status",
+        "scheduled_at",
         "get_total_cost",
     )
     form = OrderForm
@@ -111,8 +113,8 @@ class OrderAdmin(admin.ModelAdmin):
     show_full_result_count = False
     list_filter = (
         "status",
-        "created_at",
-        "updated_at",
+        ("created_at", DateRangeFilter),
+        ("scheduled_at", DateTimeRangeFilter),
         "region",
     )
     date_hierarchy = "created_at"
