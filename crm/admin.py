@@ -72,7 +72,10 @@ class ContactFormAdmin(admin.ModelAdmin):
         "status",
     )
     search_fields = ("first_name", "last_name", "phone")
-    list_filter = ("status",)
+    list_filter = (
+        "status",
+        ("created_at", DateRangeFilter),
+    )
     readonly_fields = ("create_order_link",)
     list_editable = ("status",)
 
