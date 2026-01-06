@@ -133,6 +133,14 @@ class Order(models.Model):
         customer_info = self.customer.phone if self.customer else "No customer"
         return f"Order #{self.pk} | {customer_info} | {self.status}"
 
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new and self.customer:
+            ContactForm.objects.filter(
+                customer=self.customer, status__in=[FormStatus.NEW, FormStatus.PENDING]
+            ).update(status=FormStatus.DONE)
+
 
 class OrderItem(models.Model):
     service = models.ForeignKey(
