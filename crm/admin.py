@@ -1,3 +1,5 @@
+from dal import autocomplete
+from django import forms
 from django.contrib import admin
 from django.db.models import DecimalField, F, Sum, Value
 from django.db.models.functions import Coalesce
@@ -18,6 +20,33 @@ class OrderItemInline(admin.TabularInline):
 class AddressInline(admin.TabularInline):
     model = Address
     extra = 1
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = (
+            "customer",
+            "region",
+            "address",
+            "nurse",
+            "status",
+        )
+
+        widgets = {
+            "nurse": autocomplete.ModelSelect2Multiple(
+                url="crm:nurse_autocomplete",
+                forward=[
+                    "region",
+                ],
+            ),
+            "address": autocomplete.ModelSelect2(
+                url="crm:address_autocomplete",
+                forward=[
+                    "region",
+                ],
+            ),
+        }
 
 
 @admin.register(CareerForm)
@@ -76,6 +105,7 @@ class OrderAdmin(admin.ModelAdmin):
         "status",
         "get_total_cost",
     )
+    form = OrderForm
     inlines = [OrderItemInline]
     autocomplete_fields = ["customer", "address", "nurse"]
     show_full_result_count = False
@@ -198,4 +228,5 @@ class CustomerAdmin(admin.ModelAdmin):
     show_full_result_count = False
 
 
-# TODO: Utworzenie Order, powinno zmienić status dla contact form na Done.
+# TODO: zrobić telegram boty.
+# TODO: zmiana statusów po wiadomości w bocie.
