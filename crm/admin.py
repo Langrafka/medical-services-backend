@@ -1,6 +1,9 @@
+import os
+
+import gspread
 from dal import autocomplete
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import DecimalField, F, Sum, Value
 from django.db.models.functions import Coalesce
 from django.urls import reverse
@@ -10,6 +13,90 @@ from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from operations.models import Nurse
 
 from .models import Address, CareerForm, ContactForm, Customer, Order, OrderItem
+
+
+def export_to_google_sheets(modeladmin, request, queryset):
+    # Get conf from environment variables
+    sheet_id = os.getenv("GOOGLE_SHEETS_ID")
+    creds_path = os.getenv("GOOGLE_CREDS_PATH")
+
+    # Check conf
+    if not sheet_id or not creds_path:
+        messages.error(request, "Configuration not completed (Missing data in ENV).")
+        return
+
+    try:
+        # Authorization
+        gc = gspread.service_account(filename=creds_path)
+        print("conect1")
+        # Open sheet
+        sh = gc.open_by_key(sheet_id)
+        worksheet = sh.get_worksheet(0)
+        print("conect2")
+        # Prepare headers
+        headers = [
+            "ID",
+            "CUSTOMER",
+            "REGION",
+            "ORDER DATE",
+            "STATUS",
+            "VISIT DATE",
+            "NURSE",
+            "TOTAL COST",
+        ]
+        data_to_export = [headers]
+
+        queryset = queryset.select_related("customer", "region").prefetch_related(
+            "nurse"
+        )
+        # Queryset processing - exchange objects for data rows
+        for order in queryset:
+            customer_name = (
+                f"{order.customer.first_name} {order.customer.last_name}"
+                if order.customer
+                else "No customer"
+            )
+            created_str = (
+                order.created_at.strftime("%Y/%m/%d %H:%M") if order.created_at else ""
+            )
+            scheduled_str = (
+                order.scheduled_at.strftime("%Y/%m/%d %H:%M")
+                if order.scheduled_at
+                else "Not scheduled"
+            )
+            nurses_list = ", ".join(
+                [f"{n.first_name} {n.last_name}" for n in order.nurse.all()]
+            )
+
+            row = [
+                order.id,
+                customer_name,
+                order.region.name if order.region else "",
+                created_str,
+                order.status,
+                scheduled_str,
+                nurses_list,
+                str(order.total_cost),
+            ]
+
+            data_to_export.append(row)
+
+        # Send data to Google (clean sheet and send new data)
+        worksheet.clear()
+        worksheet.update(values=data_to_export, range_name="A1")
+
+        # Feedback for user
+        messages.success(
+            request,
+            f"Successfully exported data to Google Sheets: {queryset.count()} orders.",
+        )
+    except Exception as e:
+        messages.error(
+            request, f"Error occurred while exporting data to Google Sheets: {str(e)}"
+        )
+
+
+export_to_google_sheets.short_description = "Export data to Google Sheets"
 
 
 class OrderItemInline(admin.TabularInline):
@@ -112,7 +199,7 @@ class OrderAdmin(admin.ModelAdmin):
     )
     form = OrderForm
     inlines = [OrderItemInline]
-    autocomplete_fields = ["customer", "address", "nurse"]
+    autocomplete_fields = ["customer"]
     show_full_result_count = False
     list_filter = (
         "status",
@@ -132,6 +219,7 @@ class OrderAdmin(admin.ModelAdmin):
         "address__street",
     )
     list_editable = ("status",)
+    actions = [export_to_google_sheets]
 
     def get_queryset(self, request):
         queryset = (
@@ -235,3 +323,4 @@ class CustomerAdmin(admin.ModelAdmin):
 
 # TODO: zrobić telegram boty.
 # TODO: zmiana statusów po wiadomości w bocie.
+# TODO: arkusze dla admina
