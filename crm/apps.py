@@ -5,4 +5,4 @@ class CrmConfig(AppConfig):
     name = "crm"
 
     def ready(self):
-        pass
+        import crm.signals  # noqa: F401

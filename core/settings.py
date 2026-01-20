@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     "core",
     "web_content",
     "operations",
-    "crm",
+    "crm.apps.CrmConfig",
 ]
 
 MIDDLEWARE = [
