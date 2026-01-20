@@ -323,4 +323,4 @@ class CustomerAdmin(admin.ModelAdmin):
 
 # TODO: zrobić telegram boty.
 # TODO: zmiana statusów po wiadomości w bocie.
-# TODO: arkusze dla admina
+# TODO: przyciski zwrotne w wiadomościach bota.
