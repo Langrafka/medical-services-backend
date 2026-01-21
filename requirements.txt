@@ -1,10 +1,12 @@
 amqp==5.3.1
+anyio==4.12.1
 asgiref==3.11.0
 attrs==25.4.0
 billiard==4.2.4
 black==25.12.0
 cachetools==6.2.4
 celery==5.6.0
+celery-types==0.24.0
 certifi==2025.11.12
 charset-normalizer==3.4.4
 click==8.3.1
@@ -31,6 +33,9 @@ google-auth==2.41.1
 google-auth-oauthlib==1.2.3
 gspread==6.2.1
 gunicorn==23.0.0
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
 idna==3.11
 inflection==0.5.1
 iniconfig==2.3.0
@@ -54,6 +59,7 @@ pyasn1_modules==0.4.2
 pycodestyle==2.14.0
 pyflakes==3.4.0
 Pygments==2.19.2
+PyMySQL==1.1.2
 pytest==9.0.2
 pytest-django==4.11.1
 python-dateutil==2.9.0.post0
