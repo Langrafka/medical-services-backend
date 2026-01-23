@@ -16,6 +16,8 @@ class OrderStatus(models.TextChoices):
     PENDING = "pending", "Pending"
     DONE = "done", "Done"
     CANCELLED = "cancelled", "Cancelled"
+    ACCEPTED = "accepted", "Accepted"
+    REJECTED = "rejected", "Rejected"
 
 
 class Customer(models.Model):

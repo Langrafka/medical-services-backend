@@ -7,6 +7,7 @@ from crm.views import (
     CareerFormView,
     ContactFormView,
     NurseAutocomplete,
+    OrderCallback,
 )
 
 urlpatterns = [
@@ -18,5 +19,6 @@ urlpatterns = [
         AddressAutocomplete.as_view(),
         name="address_autocomplete",
     ),
+    path("telegram/webhook/", OrderCallback.as_view(), name="telegram_webhook"),
 ]
 app_name = "crm"

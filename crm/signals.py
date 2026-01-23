@@ -38,6 +38,7 @@ def send_telegram_notification_order(sender, instance, action, **kwargs):
                 "inline_keyboard": [
                     [
                         {"text": "Accept", "callback_data": f"accept_{instance.pk}"},
+                        {"text": "Reject", "callback_data": f"reject_{instance.pk}"},
                         {"text": "Done", "callback_data": f"done_{instance.pk}"},
                     ]
                 ]
