@@ -4,6 +4,7 @@ import os
 
 import requests
 from dal import autocomplete
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
@@ -73,7 +74,7 @@ class AddressAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
-@csrf_exempt
+@method_decorator(csrf_exempt, name="dispatch")
 class OrderCallback(APIView):
     authentication_classes = []
     throttle_classes = [ScopedRateThrottle]
