@@ -1,6 +1,5 @@
 from django.core.validators import MaxLengthValidator
 from django.db import models
-from django.db.models import DecimalField, F, Sum
 
 from operations.models import Nurse, Region
 from web_content.models import Service
@@ -17,6 +16,8 @@ class OrderStatus(models.TextChoices):
     PENDING = "pending", "Pending"
     DONE = "done", "Done"
     CANCELLED = "cancelled", "Cancelled"
+    ACCEPTED = "accepted", "Accepted"
+    REJECTED = "rejected", "Rejected"
 
 
 class Customer(models.Model):
@@ -116,26 +117,31 @@ class Order(models.Model):
     address = models.ForeignKey(
         Address, on_delete=models.PROTECT, related_name="orders", null=True, blank=True
     )
-    scheduled = models.DateTimeField(blank=True, null=True)
+    scheduled_at = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     @property
     def total_cost(self):
-        if hasattr(self, "order_items"):
-            result = self.order_items.aggregate(
-                total=Sum(
-                    F("price_at_buy") * F("quantity"),
-                    output_field=DecimalField(),
-                )
-            )["total"]
+        if self.pk:
+            result = sum(
+                item.price_at_buy * item.quantity for item in self.order_items.all()
+            )
             return result or 0
         return 0
 
     def __str__(self):
         customer_info = self.customer.phone if self.customer else "No customer"
         return f"Order #{self.pk} | {customer_info} | {self.status}"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new and self.customer:
+            ContactForm.objects.filter(
+                customer=self.customer, status__in=[FormStatus.NEW, FormStatus.PENDING]
+            ).update(status=FormStatus.DONE)
 
 
 class OrderItem(models.Model):

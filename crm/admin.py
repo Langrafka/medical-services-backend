@@ -1,11 +1,102 @@
-from django.contrib import admin
-from django.db.models import DecimalField, F, Sum
+import os
+
+import gspread
+from dal import autocomplete
+from django import forms
+from django.contrib import admin, messages
+from django.db.models import DecimalField, F, Sum, Value
+from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.html import format_html
+from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
 from operations.models import Nurse
 
 from .models import Address, CareerForm, ContactForm, Customer, Order, OrderItem
+
+
+def export_to_google_sheets(modeladmin, request, queryset):
+    # Get conf from environment variables
+    sheet_id = os.getenv("GOOGLE_SHEETS_ID")
+    creds_path = os.getenv("GOOGLE_CREDS_PATH")
+
+    # Check conf
+    if not sheet_id or not creds_path:
+        messages.error(request, "Configuration not completed (Missing data in ENV).")
+        return
+
+    try:
+        # Authorization
+        gc = gspread.service_account(filename=creds_path)
+        print("conect1")
+        # Open sheet
+        sh = gc.open_by_key(sheet_id)
+        worksheet = sh.get_worksheet(0)
+        print("conect2")
+        # Prepare headers
+        headers = [
+            "ID",
+            "CUSTOMER",
+            "REGION",
+            "ORDER DATE",
+            "STATUS",
+            "VISIT DATE",
+            "NURSE",
+            "TOTAL COST",
+        ]
+        data_to_export = [headers]
+
+        queryset = queryset.select_related("customer", "region").prefetch_related(
+            "nurse"
+        )
+        # Queryset processing - exchange objects for data rows
+        for order in queryset:
+            customer_name = (
+                f"{order.customer.first_name} {order.customer.last_name}"
+                if order.customer
+                else "No customer"
+            )
+            created_str = (
+                order.created_at.strftime("%Y/%m/%d %H:%M") if order.created_at else ""
+            )
+            scheduled_str = (
+                order.scheduled_at.strftime("%Y/%m/%d %H:%M")
+                if order.scheduled_at
+                else "Not scheduled"
+            )
+            nurses_list = ", ".join(
+                [f"{n.first_name} {n.last_name}" for n in order.nurse.all()]
+            )
+
+            row = [
+                order.id,
+                customer_name,
+                order.region.name if order.region else "",
+                created_str,
+                order.status,
+                scheduled_str,
+                nurses_list,
+                str(order.total_cost),
+            ]
+
+            data_to_export.append(row)
+
+        # Send data to Google (clean sheet and send new data)
+        worksheet.clear()
+        worksheet.update(values=data_to_export, range_name="A1")
+
+        # Feedback for user
+        messages.success(
+            request,
+            f"Successfully exported data to Google Sheets: {queryset.count()} orders.",
+        )
+    except Exception as e:
+        messages.error(
+            request, f"Error occurred while exporting data to Google Sheets: {str(e)}"
+        )
+
+
+export_to_google_sheets.short_description = "Export data to Google Sheets"
 
 
 class OrderItemInline(admin.TabularInline):
@@ -19,6 +110,33 @@ class AddressInline(admin.TabularInline):
     extra = 1
 
 
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = (
+            "customer",
+            "region",
+            "address",
+            "nurse",
+            "status",
+        )
+
+        widgets = {
+            "nurse": autocomplete.ModelSelect2Multiple(
+                url="crm:nurse_autocomplete",
+                forward=[
+                    "region",
+                ],
+            ),
+            "address": autocomplete.ModelSelect2(
+                url="crm:address_autocomplete",
+                forward=[
+                    "region",
+                ],
+            ),
+        }
+
+
 @admin.register(CareerForm)
 class CareerFormAdmin(admin.ModelAdmin):
     list_display = (
@@ -27,6 +145,9 @@ class CareerFormAdmin(admin.ModelAdmin):
         "phone",
         "status",
     )
+    search_fields = ("first_name", "last_name", "phone")
+    list_filter = ("status",)
+    list_editable = ("status",)
 
 
 @admin.register(ContactForm)
@@ -37,8 +158,13 @@ class ContactFormAdmin(admin.ModelAdmin):
         "phone",
         "status",
     )
-
+    search_fields = ("first_name", "last_name", "phone")
+    list_filter = (
+        "status",
+        ("created_at", DateRangeFilter),
+    )
     readonly_fields = ("create_order_link",)
+    list_editable = ("status",)
 
     def create_order_link(self, obj):
         if obj.customer:
@@ -65,21 +191,47 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "customer",
         "region",
-        "address",
+        "address__city",
+        "address__street",
         "status",
-        "description",
-        "created_at",
-        "updated_at",
+        "scheduled_at",
         "get_total_cost",
     )
+    form = OrderForm
     inlines = [OrderItemInline]
-    autocomplete_fields = ["customer", "address", "nurse"]
+    autocomplete_fields = ["customer"]
+    show_full_result_count = False
+    list_filter = (
+        "status",
+        ("created_at", DateRangeFilter),
+        ("scheduled_at", DateTimeRangeFilter),
+        "region",
+    )
+    date_hierarchy = "created_at"
+    search_fields = (
+        "customer__first_name",
+        "customer__last_name",
+        "nurse__first_name",
+        "nurse__last_name",
+        "region__name",
+        "address__city",
+        "address__building",
+        "address__street",
+    )
+    list_editable = ("status",)
+    actions = [export_to_google_sheets]
 
     def get_queryset(self, request):
-        queryset = super().get_queryset(request)
+        queryset = (
+            super()
+            .get_queryset(request)
+            .select_related("region", "customer", "address")
+        ).prefetch_related("nurse", "order_items")
+
         queryset = queryset.annotate(
-            _annotated_total=Sum(
-                F("order_items__price_at_buy") * F("order_items__quantity"),
+            _annotated_total=Coalesce(
+                Sum(F("order_items__price_at_buy") * F("order_items__quantity")),
+                Value(0),
                 output_field=DecimalField(),
             )
         )
@@ -90,7 +242,9 @@ class OrderAdmin(admin.ModelAdmin):
         Check for result in annotate (for list),
         if not get it from model's property.
         """
-        total = getattr(obj, "_annotated_total", obj.total_cost)
+        total = getattr(obj, "_annotated_total", None)
+        if total is None:
+            total = obj.total_cost
         return f"{total:.2f}"
 
     get_total_cost.short_description = "Total cost"
@@ -127,7 +281,6 @@ class AddressAdmin(admin.ModelAdmin):
     list_display = (
         "region",
         "city",
-        "postal_code",
         "street",
         "building",
         "local",
@@ -137,6 +290,10 @@ class AddressAdmin(admin.ModelAdmin):
         "city",
         "street",
         "customer__last_name",
+    )
+    list_filter = (
+        "region",
+        "city",
     )
 
     def get_queryset(self, request):
@@ -160,3 +317,8 @@ class CustomerAdmin(admin.ModelAdmin):
         "last_name",
         "phone",
     )
+    list_filter = ("created_at",)
+    show_full_result_count = False
+
+
+# TODO: Rejestracja webhook na: https://api.telegram.org/bot<TOKEN_BOTA_ORDER>/setWebhook?url=https://<TWOJA_DOMENA>/api/crm/telegram/webhook/
