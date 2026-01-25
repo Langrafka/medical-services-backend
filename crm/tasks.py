@@ -37,9 +37,11 @@ def send_telegram_notification_task(bot_type: str, message: str, reply_markup=No
     if reply_markup:
         payload["reply_markup"] = reply_markup
 
-    try:
-        res = requests.post(url, json=payload, timeout=10)
-        res.raise_for_status()
-    except Exception as e:
-        logger.exception(e)
-        raise e
+    if telegram_bot_token and telegram_chat_id:
+        try:
+            res = requests.post(url, json=payload, timeout=5)
+            res.raise_for_status()
+        except Exception as e:
+            logger.exception(f"Telegram error for {bot_type}: {e}")
+    else:
+        logger.error(f"Missing Telegram credentials for {bot_type}")
