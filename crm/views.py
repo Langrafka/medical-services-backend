@@ -100,6 +100,7 @@ class OrderCallback(APIView):
                 action_type, pk = callback_string.split("_")
                 order_qs = Order.objects.filter(pk=pk)
                 toast_text = "Action completed!"
+                new_text = original_text
 
                 if action_type.lower() == "accept":
                     if order_qs.filter(status="ACCEPTED").exists():

@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "axes",
     "rangefilter",
+    "django_celery_results",
     # Local apps
     "core",
     "web_content",
@@ -242,5 +243,6 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_TASK_ALWAYS_EAGER = False
