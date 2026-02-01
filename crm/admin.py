@@ -319,6 +319,3 @@ class CustomerAdmin(admin.ModelAdmin):
     )
     list_filter = ("created_at",)
     show_full_result_count = False
-
-
-# TODO: Rejestracja webhook na: https://api.telegram.org/bot<TOKEN_BOTA_ORDER>/setWebhook?url=https://<TWOJA_DOMENA>/api/crm/telegram/webhook/
