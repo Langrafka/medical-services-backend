@@ -21,6 +21,7 @@ django-cors-headers==4.9.0
 django-debug-toolbar==6.1.0
 django-filter==25.2
 django-ipware==7.0.1
+django-modeltranslation==0.19.19
 django-stubs==5.2.8
 django-stubs-ext==5.2.8
 django_celery_results==2.6.0
