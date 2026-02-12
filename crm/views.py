@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from crm.models import Address, Customer, Order
+from crm.models import Address, Customer, Order, OrderStatus
 from crm.serializers import CareerFormSerializer, ContactFormSerializer
 from operations.models import Nurse
 
@@ -106,15 +106,24 @@ class OrderCallback(APIView):
                     if order_qs.filter(status="ACCEPTED").exists():
                         toast_text = "Order is already accepted!"
                     else:
-                        order_qs.update(status="ACCEPTED")
+                        order_qs.update(status=OrderStatus.ACCEPTED)
+                        logger.info(
+                            f"Updated order {pk} to {action_type}. Rows affected: {order_qs.count()}"
+                        )
                         toast_text = f"Order accepted by {first_name}!"
                         new_text = f"{original_text}\n\n✅ <b>Status: Accepted by {first_name}</b>"
                 elif action_type.lower() == "done":
-                    order_qs.update(status="DONE")
+                    order_qs.update(status=OrderStatus.DONE)
+                    logger.info(
+                        f"Updated order {pk} to {action_type}. Rows affected: {order_qs.count()}"
+                    )
                     toast_text = "Order done!"
                     new_text = f"{original_text}\n\n✅✅ <b>Status: Completed by {first_name}</b>"
                 elif action_type.lower() == "reject":
-                    order_qs.update(status="REJECTED")
+                    order_qs.update(status=OrderStatus.REJECTED)
+                    logger.info(
+                        f"Updated order {pk} to {action_type}. Rows affected: {order_qs.count()}"
+                    )
                     toast_text = "Order rejected!"
                     new_text = f"{original_text}\n\n\❌ <b>Status: Rejected by {first_name}</b>"
 

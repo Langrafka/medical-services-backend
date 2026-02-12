@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third-party apps
+    "modeltranslation",
     "rest_framework",
     "debug_toolbar",
     "drf_spectacular_sidecar",
@@ -246,3 +247,11 @@ if not DEBUG:
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_TASK_ALWAYS_EAGER = False
+
+LANGUAGES = [("en", "English"), ("uk", "Ukrainian")]
+
+LANGUAGE_CODE = "en"
+
+MODELTRANSLATION_FALLBACK_LANGUAGES = ("en",)
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

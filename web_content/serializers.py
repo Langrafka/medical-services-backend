@@ -3,7 +3,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from web_content.models import Service
+from web_content.models import Service, ServiceType
 
 
 class ServiceSerializer(ModelSerializer):
@@ -12,8 +12,17 @@ class ServiceSerializer(ModelSerializer):
     class Meta:
         model = Service
         fields = [
-            "name",
-            "service_type",
+            "name_en",
+            "name_uk",
             "price",
-            "description",
+            "description_en",
+            "description_uk",
         ]
+
+
+class ServiceTypeSerializer(ModelSerializer):
+    services = ServiceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ServiceType
+        fields = ["name_en", "name_uk", "services"]

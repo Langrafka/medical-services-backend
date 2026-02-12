@@ -4,14 +4,14 @@ from django.db import transaction
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
-from crm.models import CareerForm, ContactForm, Order
+from crm.models import CareerForm, ContactForm, Order, FormStatus, OrderStatus
 from crm.tasks import send_telegram_notification_task
 
 
 @receiver(post_save, sender=ContactForm)
 def send_telegram_notification_contact_form(sender, instance, created, **kwargs):
     if created:
-        ContactForm.objects.filter(pk=instance.pk).update(status="PENDING")
+        ContactForm.objects.filter(pk=instance.pk).update(status=FormStatus.PENDING)
         send_telegram_notification_task.delay(
             bot_type="admin",
             message=f"New contact form: {instance.first_name} {instance.last_name} - {instance.phone}",
@@ -21,7 +21,7 @@ def send_telegram_notification_contact_form(sender, instance, created, **kwargs)
 @receiver(post_save, sender=CareerForm)
 def send_telegram_notification_career_form(sender, instance, created, **kwargs):
     if created:
-        CareerForm.objects.filter(pk=instance.pk).update(status="PENDING")
+        CareerForm.objects.filter(pk=instance.pk).update(status=FormStatus.PENDING)
         send_telegram_notification_task.delay(
             bot_type="admin",
             message=f"New career form: {instance.first_name} {instance.last_name} - {instance.phone}",
@@ -51,7 +51,7 @@ def send_telegram_notification_order(sender, instance, action, **kwargs):
                 f"Nurse: {', '.join([(str(n.first_name) + ' ' + str(n.last_name)) for n in instance.nurse.all()])}\n"
                 f"Order: {', '.join([str(it.service.name) + ' - ' + str(it.quantity) for it in instance.order_items.all()])}"
             )
-            Order.objects.filter(pk=instance.pk).update(status="PENDING")
+            Order.objects.filter(pk=instance.pk).update(status=OrderStatus.PENDING)
             send_telegram_notification_task.delay(
                 bot_type="order",
                 message=message,
